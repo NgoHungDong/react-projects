@@ -11,13 +11,19 @@ class Todo extends React.Component {
         }
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleDoneItem = this.handleDoneItem.bind(this);
+        this.handleDeleteItem = this.handleDeleteItem.bind(this);
     }
 
     render() {
         return (
             <div>
                 <h3>TODO</h3>
-                <TodoList items={this.state.items}/>
+                <ul>
+                {this.state.items.map(item => (
+                    <TodoItem key={item.id} item={item} handleDoneItem={this.handleDoneItem} handleDeleteItem={this.handleDeleteItem} data_id={item.id}/>
+                ))}
+                </ul>
                 <form onSubmit={this.handleSubmit}>
                     <input
                         onChange={this.handleChange}
@@ -26,7 +32,7 @@ class Todo extends React.Component {
                     <button>
                         Add #{this.state.items.length + 1}
                     </button>
-                </form>
+                </form>                                                                                                                                                                                                                                              
             </div>
         );
     }
@@ -43,23 +49,74 @@ class Todo extends React.Component {
         const newItem = {
             id: Date.now(),
             text: this.state.text,
+            status: false
         }
         this.setState(prev => ({
             items: prev.items.concat(newItem),
             text: ''
         }));
     }
+
+    handleDoneItem(_State, _Id) {
+        this.setState(state => {
+            const items = state.items.map(item => {
+                if (item.id === _Id){
+                    item.status = _State.status
+                    return item
+                } else {
+                    return item
+                }
+            })
+            return items
+        })
+    }
+
+    handleDeleteItem(_Id) {
+        let filteredItems = this.state.items.filter(item => item.id !== _Id)
+        this.setState({
+            items: filteredItems,
+            text: ''
+        });
+    }
 }
 
-class TodoList extends React.Component {
+class TodoItem extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            status: false
+        };
+        this.handleChange = this.handleChange.bind(this);
+        this.updateDoneItem = this.updateDoneItem.bind(this);
+        this.deleteItem = this.deleteItem.bind(this);
+    }
+
     render() {
+        
         return (
-            <ul>
-                {this.props.items.map(item => (
-                    <li key={item.id}>{item.text}</li>
-                ))}
-            </ul>
+            <li><input type="checkbox" onClick={this.handleChange}></input>
+            {this.props.item.status ? (
+                <strike>{this.props.item.text}</strike>
+            ) : (
+                this.props.item.text
+            )}
+            <button onClick={this.deleteItem}>delete</button>
+            </li>
         )
+    }
+
+    handleChange(){
+        this.setState({
+            status: !this.state.status
+        }, this.updateDoneItem)
+    }
+
+    updateDoneItem() {
+        this.props.handleDoneItem(this.state, this.props.data_id)
+    }
+
+    deleteItem() {
+        this.props.handleDeleteItem(this.props.data_id)
     }
 }
 
